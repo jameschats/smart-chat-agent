@@ -63,7 +63,7 @@ const enableWebhook = async () => {
       "sending https://api.livechatinc.com/v3.3/configuration/action/enable_license_webhooks"
     );
 
-    logmessage("enableWebhook()");
+    //logmessage("enableWebhook()");
     await apiClient.post(
       "/v3.3/configuration/action/enable_license_webhooks",
       {},
@@ -86,7 +86,7 @@ const registerWebhook = async () => {
       "sending https://api.livechatinc.com/v3.3/configuration/action/register_webhook"
     );
 
-    logmessage("registerWebhook()");
+    //logmessage("registerWebhook()");
     const { data } = await apiClient.post(
       "/v3.3/configuration/action/register_webhook",
       {
@@ -121,7 +121,7 @@ const checkWebhookExists = async () => {
       "sending https://api.livechatinc.com/v3.3/configuration/action/list_webhooks"
     );
 
-    logmessage("checkWebhookExists()");
+    //logmessage("checkWebhookExists()");
     const { data } = await apiClient.post(
       "/v3.3/configuration/action/list_webhooks",
       {
@@ -211,14 +211,14 @@ app.get("/books", (req, res) => {
 
 app.post("/event", (req, res) => {
   try {
-    logmessage("event");
+    //logmessage("event");
     console.log("event0");
     const { body } = req;
     console.log("event1");
     const event = body.payload.event;
     console.log("event2");
     console.log(event);
-    logmessage(event);
+    //logmessage(event);
 
     io.emit("so_incoming_event", event);
 
@@ -277,11 +277,11 @@ app.get("/install", async (req, res) => {
   });
 
   try {
-    logmessage("before getAuth()");
+    //logmessage("before getAuth()");
     const auth = await getAuth();
     accessToken = auth.access_token;
 
-    logmessage("accessToken", accessToken);
+    //logmessage("accessToken", accessToken);
     console.log("accessToken", accessToken);
     // logmessage('accessToken : ' + accessToken);
     // writefile('accessToken : ' + accessToken);
@@ -304,7 +304,7 @@ app.get("/install", async (req, res) => {
 
 server.listen(process.env.PORT || port, () => {
   console.log("started server");
-  logmessage("started server");
+  //logmessage("started server");
   console.log(`Chat guard listening at http://localhost:${port}`);
   console.log("heroku started in port: " + process.env.PORT);
 });
