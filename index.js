@@ -25,7 +25,9 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use(express.static(path.join(__dirname, "public")));
+//app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static("public"));
+app.use("/css", express.static(path.join(__dirname, "public/css")));
 
 app.get("/", function(req, res) {
   res.sendFile(path.join(__dirname, "index.html"));
