@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommendation System Dev</title>
+  <!-- Axios library for API calls -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <!-- Sign in with LiveChat SDK -->
+  <script src="https://cdn.livechatinc.com/accounts/accounts-sdk.min.js"></script>
+
+  <!-- LiveChat Agent App SDK -->
+  <script src="https://unpkg.com/@livechat/agent-app-sdk@latest/dist/agentapp.umd.min.js"></script>
+  
+  <!-- LiveChat customer App SDK -->
+  <!-- <script src="https://unpkg.com/@livechat/customer-sdk@3.1.0"></script> -->
+  <script src="https://unpkg.com/@livechat/customer-sdk@3.1.0"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+  
+
+  <link rel="stylesheet" href="style.css">
+
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins" />
+
+
+  <!-- <script> import { createDetailsWidget } from "@livechat/agent-app-sdk"; </script> -->
+  
+</head>
+
+
+<body>
+  
+  
+
+  
+  
+  
+  <!-- Sign in with LiveChat Button -->
+  <a href="" onclick="instance.openPopup()">
+    <div id="livechat-login-button" class="livechat-login-button"></div>
+  </a>
+
+ 
+  <script>
+    let access_token;
+    var current_chat_id;
+    var current_event_id;
+    var current_agent_email;
+    var current_customer_email;
+    var current_agent_id;
+    var current_customer_id;
+    // var current_customer_chatid;
+
+    var current_customer_name;
+    var current_customer_chat_id;
+    var showRecommendation;
+    var min_sentiment_score = 30;
+    const qlist = [];
+    var qarray = [];
+    var answer1;
+    var answer2;
+    var score1;
+    var score2;
+    var qspositive;
+    var qsnegative;
+    var qsneutral;
+    var qspositiveapi;
+    var qsnegativeapi;
+    var qsneutralapi;
+    var qsresult;
+    var apositive;
+    var aneutral;
+    var anegative;
+    var apositiveapi;
+    var aneutralapi;
+    var anegativeapi;
+    var aresult;
+    var apositive1;
+    var aneutral1;
+    var anegative1;
+    var apositive1api;
+    var aneutral1api;
+    var anegative1api;
+    var aresult1;
+    var noanswer;
+    var model="1";
+    var callsentiment;
+    var clickmode;
+    var dict = {};
+    const baseUrl='http://localhost:105/processanswers/?query='
+    const eventPostUrl='https://localhost:7041/api/chatevent/'
+    // const useEditUrl='https://localhost:7041/api/chatevent/useedit'
+    
+    
+    
+    // const baseUrl='http://localhost:105/processanswers/?'
+    // const baseUrl1='http://localhost:107/processanswers-with-sentiment/?query='
+
+    // initiates the SDK and returns the accountsSdk object instance
+    const instance = AccountsSDK.init({
+      // obtained from the Developers Console when you create your app
+      // client_id: "53e59464b2122e418a5ec4c80de5965e",
+      client_id: "e22c3b45ca9c5c0fbbfe835dee988f5f",
+                  
+      
+      // the callback executed when user's identity is fetched
+      onIdentityFetched: (error, data) => {
+        if (data) {
+          // in console, shows information about user being authorized (optional)
+          console.log("data on identity fetched:"+ data);
+          
+          console.log("User authorized!");
+          // hides the Sign in with LiveChat button
+          document.getElementById("livechat-login-button").style.display = "none";
+          // shows the form for sending a card
+          document.getElementById("parent").style.display = "block";
+          // shows the user's license number in console (optional)
+          console.log("License number: " + data.license);
+          liid=data.license
+          // sets access_token
+          access_token = data.access_token;
+          console.log("access token:"+ access_token);
+          // shows errors in console (optional)
+          console.log(error);
+          
+        }
+      }
+    });
+    
+
+    const customerSDK = CustomerSDK.init({
+        licenseId: 7499411,
+        clientId: "a715e417b7201b993f9286a8c24af754",
+        
+        })
+
+        
+
+        
+        customerSDK.on('customer_id', id => {
+        console.log('customer id is', id)
+        customer_id=id
+        })
+        
+        console.log("4")
+        // if(length(customer_id>35)){
+        customerSDK.on('incoming_event', payload => {
+        const { chat,users, event } = payload
+        console.log('new event type - ', event.type)
+        console.log('user details: ' + users)
+        switch (event.type) {
+        case 'message':
+        // console.log('new event - ', event.type)
+        console.log('new event - ', event)
+        console.log('new message - ', event.text)
+        current_event_id=event.id
+        current_agent_email="jfredric@noura.ai"
+
+        customerSDK.on('user_data', user => {
+            console.log("current user details"+user)
+          })
+        
+        // const message=event.text
+        // checking the message is from customer
+        
+        
+        //question=event.text
+       //qlist.push(question);
+          // console.log(qlist)
+          
+          
+          // var qarray = [];
+         // let len =  qlist.length
+          
+          //for (let i = 0; i < len; i++) {
+          dict.id = (qarray.length + 1);
+          dict.authorId = (event.authorId);
+          dict.question = event.text;
+          qarray.push({...dict});
+         // }
+          // updateListbox();
+          // listAgents()
+          createListbox();
+         
+          
+         // console.log(qitems);
+          // console.log(JSON.stringify(qarray));
+        
+        
+        
+        // current_customer_name = localStorage.getItem('customer_name');
+        // current_customer_email = localStorage.getItem('customer_email');
+
+        // current_customer_chat_id = localStorage.getItem('customer_chatid');
+        
+        // current_customer_email = localStorage.getItem('customer_email');
+        current_agent_id="1234"
+        // current_customer_id=localStorage.getItem('customer_id');
+
+        
+        console.log('current_customer_id: ' + current_customer_id)
+        console.log('current_customer_name: ' + current_customer_name)
+        console.log('current_customer_email: ' + current_customer_email)
+        console.log('current_customer_chatid: ' + current_chat_id)
+        console.log('eventId: ' + current_event_id)
+        if (event.authorId==current_customer_id){
+          console.log("question:"+document.getElementById("textarea0").innerHTML)
+          document.getElementById("textarea0").innerHTML=event.text;
+          localStorage.setItem('question1', event.text);
+          question5=event.text
+         
+        processQuestionAnswers(question5);
+
+        
+      
+    }
+    
+    break
+    default:
+    break
+  
+    }
+    })
+    
+  var promise=LiveChat.createDetailsWidget()
+  // console.log(promise)
+
+    
+  LiveChat.createDetailsWidget().then(function (widget) {
+      
+     
+      // condition that is emitted when an agent opens a conversation within Chats
+      widget.on("customer_profile", data => {
+        // shows customer data in console (optional)
+        console.log(data);
+        // console.log(data.chat.chat_id);
+        // sets chat_id
+        current_chat_id = data.chat.chat_id;
+        current_customer_id = data.id;
+        current_customer_name = data.name;
+        current_customer_email = data.email;
+        current_customer_chatid = data.chat.chat_id;
+        // localStorage.setItem('customer_id',current_customer_id);
+        // localStorage.setItem('customer_name',current_customer_name);
+        // localStorage.setItem('customer_email',current_customer_email);
+        // localStorage.setItem('customer_chatid',current_customer_chatid);
+
+        console.log("customer_id : "+current_customer_id)
+        // console.log("inside createDetailsWidget() : "+current_chat_id)
+        
+        resetTextArea();
+        // updateListbox();
+        createListbox();
+        processListMessage(2);  
+        // chatEventDetails(); 
+        // console.log("reset textarea done")
+      });
+    })    
+    .catch(error => console.log('outer error : ' + error.message));
+
+    const processQuestionAnswers =(question3) => {
+      if (question3!=null){
+          // console.log("question inside processQuestionAnswers "+question3)
+          answer=userAction(question3);
+          // sentiment=answerSentiment(question3);
+          answer.then( response => {  
+          // console.log('Received response:'+response);
+          // console.log('0a')
+          // console.log(response[0].answer_text);        
+          // resetTextArea();       
+          // console.log('0b')
+          // showRecommendation=0;
+         
+          if(response.length>0){
+            // score1=parseFloat(response[0].answer_score*100 ).toFixed(1);
+
+            
+          score1=(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            // score2=parseFloat(parseFloat(response[1].answer_score).toFixed(4)*100 >= 20);
+            // console.log("score1 "+score1)
+            // console.log("score1 "+score1a)
+          console.log('1a')
+          document.getElementById("textarea1").innerHTML ="";
+          document.getElementById("score1").innerHTML ="";
+          document.getElementById("apositive").innerHTML ="";
+          document.getElementById("aneutral").innerHTML ="";
+          document.getElementById("anegative").innerHTML ="";
+          document.getElementById("textarea2").innerHTML ="";
+          document.getElementById("score2").innerHTML ="";
+          document.getElementById("apositive1").innerHTML ="";
+          document.getElementById("aneutral1").innerHTML ="";
+          document.getElementById("anegative1").innerHTML="";
+          
+          // document.getElementById("textarea1").value =response[0].answer_text;
+          
+          console.log('1b')
+          if(score1>= min_sentiment_score){
+          showRecommendation =1;
+          // console.log("score1:"+showRecommendation)
+          // document.getElementById("textarea1").innerHTML =response[0].answer_text;
+          if(response[0].auto_answer=="true"){
+              callsentiment=0
+              console.log("callsentiment 0:"+callsentiment)
+              showRecommendation=0
+              document.getElementById("answer-div").style.display = "none";
+              txt=response[0].answer_text;
+              qspositive=(parseFloat(response[0].question_sentiment.positive).toFixed(1)).toString();
+              qsneutral=(parseFloat(response[0].question_sentiment.neutral).toFixed(1)).toString();
+              qsnegative=(parseFloat(response[0].question_sentiment.negative).toFixed(1)).toString();
+              qsresult=response[0].question_sentiment.result.toString();
+              apositive="";
+              anegative="";
+              aneutral="";
+              aresult="";
+              noanswer="1";
+              // model=1;
+              postChatDetails(current_chat_id,current_event_id,current_agent_email,current_customer_email,current_customer_id,question3,txt,score2,qspositive,qsnegative,qsneutral,qsresult,apositive,anegative,aneutral,aresult,noanswer,model)
+              richMessage3(txt)
+              // document.getElementById("auto-answer").style.display = "block";
+              // document.getElementById("textarea3").innerHTML =response[0].answer_text;
+            }
+          else{
+          
+          callsentiment=1;
+          console.log("callsentiment 1:"+callsentiment)
+          document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+          qspositive=(parseFloat(response[0].question_sentiment.positive*100).toFixed(1)).toString()+"%";
+          qspositiveapi=(parseFloat(response[0].question_sentiment.positive).toFixed(1)).toString();
+          document.getElementById("qpositive").innerHTML =qspositive;
+          qsneutral=(parseFloat(response[0].question_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          qsneutralapi=(parseFloat(response[0].question_sentiment.neutral).toFixed(1)).toString();
+          document.getElementById("qneutral").innerHTML =qsneutral;
+          qsnegative=(parseFloat(response[0].question_sentiment.negative*100).toFixed(1)).toString()+"%";
+          qsnegativeapi=(parseFloat(response[0].question_sentiment.negative).toFixed(1)).toString();
+          document.getElementById("qnegative").innerHTML =qsnegative;
+          qsresult=response[0].question_sentiment.result.toString();
+          document.getElementById("textarea1").innerHTML =response[0].answer_text.slice(0,300);
+          answer1=response[0].answer_text;
+          localStorage.setItem('answer1', response[0].answer_text);
+          document.getElementById("more-button-1").style.display = "block";
+             // postChatDetails(current_chat_id,current_event_id,current_agent_email,current_customer_email,current_agent_id,current_customer_id,question3,answer1,score1,qspositive,qsneutral,qsnegative,qsresult)
+          }
+          
+        
+          // document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+          // document.getElementById("qpositive").innerHTML =(parseFloat(response[0].question_sentiment.positive*100).toFixed(1)).toString()+"%";
+          // document.getElementById("qneutral").innerHTML =(parseFloat(response[0].question_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          // document.getElementById("qnegative").innerHTML =(parseFloat(response[0].question_sentiment.negative*100).toFixed(1)).toString()+"%";
+          }
+  
+          }
+          if(response.length>1){
+            score2=(parseFloat(parseFloat(response[1].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            
+          if(score2>= min_sentiment_score){
+          showRecommendation=1;
+          // console.log("score2:"+showRecommendation)
+          if(response[1].auto_answer=="true"){
+              
+
+              showRecommendation=0
+              callsentiment=0;
+              console.log("callsentiment 2:"+callsentiment)
+              document.getElementById("answer-div").style.display = "none";
+              txt=response[1].answer_text;
+              qspositiveapi=(parseFloat(response[1].question_sentiment.positive).toFixed(1)).toString();
+              qsneutralapi=(parseFloat(response[1].question_sentiment.neutral).toFixed(1)).toString();
+              qsnegativeapi=(parseFloat(response[1].question_sentiment.negative).toFixed(1)).toString();
+              qsresult=response[1].question_sentiment.result.toString();
+              apositive="";
+              anegative="";
+              aneutral="";
+              aresult="";
+              noanswer="1";
+              // model=1;
+              postChatDetails(current_chat_id,current_event_id,current_agent_email,current_customer_email,current_customer_id,question3,txt,score2,qspositiveapi,qsnegativeapi,qsneutralapi,qsresult,apositive,anegative,aneutral,aresult,noanswer,model)
+              richMessage3(txt)
+              // document.getElementById("auto-answer").style.display = "block";
+              // document.getElementById("textarea3").innerHTML =response[1].answer_text;
+            }
+          else{
+          callsentiment=1;
+          console.log("callsentiment 3:"+callsentiment)
+          document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+          document.getElementById("textarea2").innerHTML =response[1].answer_text.slice(0,300);
+          answer2=response[1].answer_text;
+          localStorage.setItem('answer2', response[1].answer_text);
+          document.getElementById("more-button-2").style.display = "block";
+          // postChatDetails(current_chat_id,current_event_id,current_agent_email,current_customer_email,current_agent_id,current_customer_id,question3,answer2,score2,qspositive,qsneutral,qsnegative,qsresult)
+          }
+          
+          // document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+          
+          }
+          }
+
+            //
+        // resetTextArea();
+       
+        if(showRecommendation==0){
+          // console.log('showRecommendation b')
+          // console.log('showRecommendation value'+showRecommendation)
+          // alertBox()
+          // document.getElementById("demo").innerHTML  = "No Recommenation";
+          // document.getElementById("textareatest").value ="No Recommenation";
+        }
+        else{
+          // document.getElementById("demo").innerHTML  = "";
+          // console.log('showRecommendation c')
+          // console.log('showRecommendation value '+showRecommendation)
+          // document.getElementById("textareatest").value ="";
+        }
+          
+        });
+        
+        console.log("callsentiment 4:"+callsentiment)
+        // if(callsentiment==1){
+        console.log("callsentiment 5:"+callsentiment)
+        sentiment=answerSentiment(question3);
+        //  the response from setiment api
+        sentiment.then( response => { 
+
+          if(response.length>0){
+        
+            score1=(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            
+            // console.log("score1 "+score1)
+            // document.getElementById("textarea2").value ="";
+            // document.getElementById("score2").innerHTML ="";
+          if(score1>= min_sentiment_score){
+          // document.getElementById("textarea1").value =response[0].answer_text;
+          // document.getElementById("score1").innerHTML =(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()+"%";
+          document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+          document.getElementById("apositive").innerHTML =(parseFloat(response[0].answer_sentiment.positive*100).toFixed(1)).toString()+"%";
+          document.getElementById("aneutral").innerHTML =(parseFloat(response[0].answer_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          document.getElementById("anegative").innerHTML =(parseFloat(response[0].answer_sentiment.negative*100).toFixed(1)).toString()+"%";
+          apositive=(parseFloat(response[0].answer_sentiment.positive*100).toFixed(1)).toString()+"%";
+          apositiveapi=(parseFloat(response[0].answer_sentiment.positive).toFixed(1)).toString();
+          aneutral=(parseFloat(response[0].answer_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          aneutralapi=(parseFloat(response[0].answer_sentiment.neutral).toFixed(1)).toString();
+          anegative=(parseFloat(response[0].answer_sentiment.negative*100).toFixed(1)).toString()+"%";
+          anegativeapi=(parseFloat(response[0].answer_sentiment.negative).toFixed(1)).toString();
+          aresult=response[0].answer_sentiment.result.toString();
+          noanswer="0";
+          // model=1;
+          postChatDetails(current_chat_id,current_event_id,current_agent_email,current_customer_email,current_customer_id,question3,answer1,score1,qspositiveapi,qsnegativeapi,qsneutralapi,qsresult,apositiveapi,anegativeapi,aneutralapi,aresult,noanswer,model)
+          // localStorage.setItem('apositive', apositive);
+          // localStorage.setItem('aneutral',aneutral);
+          // localStorage.setItem('anegative',anegative);
+          }
+        
+          }
+          if(response.length>1){
+            score2=(parseFloat(parseFloat(response[1].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            // console.log("score2: "+score2)
+            
+           
+          if(score2>= min_sentiment_score){
+          // document.getElementById("textarea2").value =response[1].answer_text;
+          // document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+          document.getElementById("apositive1").innerHTML =(parseFloat(response[1].answer_sentiment.positive*100).toFixed(1)).toString()+"%";
+          document.getElementById("aneutral1").innerHTML =(parseFloat(response[1].answer_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          document.getElementById("anegative1").innerHTML =(parseFloat(response[1].answer_sentiment.negative*100).toFixed(1)).toString()+"%";
+
+          apositive1=(parseFloat(response[1].answer_sentiment.positive*100).toFixed(1)).toString()+"%";
+          apositive1api=(parseFloat(response[1].answer_sentiment.positive).toFixed(1)).toString();
+          aneutral1=(parseFloat(response[1].answer_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          aneutral1api=(parseFloat(response[1].answer_sentiment.neutral).toFixed(1)).toString();
+          anegative1=(parseFloat(response[1].answer_sentiment.negative*100).toFixed(1)).toString()+"%";
+          anegative1api=(parseFloat(response[1].answer_sentiment.negative).toFixed(1)).toString();
+          noanswer="0";
+          // model=1;
+          aresult1=response[1].answer_sentiment.result.toString();
+          postChatDetails(current_chat_id,current_event_id,current_agent_email,current_customer_email,current_customer_id,question3,answer2,score2,qspositiveapi,qsnegativeapi,qsneutralapi,qsresult,apositive1api,anegative1api,aneutral1api,aresult1,noanswer,model)
+          // localStorage.setItem('apositive1', apositive1);
+          // localStorage.setItem('aneutral1',aneutral1);
+          // localStorage.setItem('anegative1',anegative1);
+         
+            }
+          }
+        
+
+        }); 
+      }
+
+       
+        }
+       
+    // }
+
+    const resetTextArea = () => {
+      document.getElementById("textarea0").innerHTML = "";
+      document.getElementById("textarea1").innerHTML = "";
+      document.getElementById("textarea2").innerHTML = ""; 
+      // document.getElementById("textareatest").value = ""; 
+      document.getElementById("score1").innerHTML ="";
+      document.getElementById("score2").innerHTML ="";
+      document.getElementById("qpositive").innerHTML ="";
+      document.getElementById("qneutral").innerHTML ="";
+      document.getElementById("qnegative").innerHTML ="";
+      document.getElementById("apositive").innerHTML ="";
+      document.getElementById("aneutral").innerHTML ="";
+      document.getElementById("anegative").innerHTML ="";
+      document.getElementById("apositive1").innerHTML ="";
+      document.getElementById("aneutral1").innerHTML ="";
+      document.getElementById("anegative1").innerHTML ="";
+      }
+
+    const updateListbox=()=>{
+      let qitems=document.getElementById("id1")
+      qitems.innerHTML="";
+          for (let item of qarray) {
+            console.log(item.authorId);
+            console.log(current_customer_id);
+            if(item.authorId== current_customer_id){
+              let li=document.createElement('li');
+              li.innerText=item.question;
+              qitems.appendChild(li);
+              console.log(li);
+            }
+          }
+    }
+
+    
+    // const createListbox=()=>{
+    //   // let qitems=document.getElementById("selectbox")
+    //   const sb = document.querySelector('#list');
+    //   sb.innerHTML="";
+    //       for (let item of qarray) {
+    //         console.log(item.authorId);
+    //         console.log(current_customer_id);
+    //         if(item.authorId== current_customer_id){
+    //             // create a new option
+    //           const option = new Option(item.question, item.id);
+    //           // add it to the list
+    //           sb.add(option, undefined);
+              
+    //         }
+    //       }
+    // }
+    const createListbox=()=>{
+      // let qitems=document.getElementById("selectbox")
+      const sb = document.querySelector('#list');
+      sb.innerHTML="";
+      console.log("inside createListbox 1")
+      qarray.slice().reverse().forEach(function(item) {
+            console.log("inside createListbox 2")
+            console.log(item.authorId);
+            console.log(current_customer_id);
+            if(item.authorId== current_customer_id){
+                // create a new option
+              const option = new Option(item.question, item.id);
+              // add it to the list
+              sb.add(option, undefined); 
+            }
+            console.log(item);
+            console.log("qaaray inside createListbox:"+qarray)
+        });
+        
+    }
+
+    const richMessage = () => {
+       // creating variable for a textbox      
+       console.log("chat id inside richMessage :"+current_chat_id)
+      
+      // const txtInput = document.getElementById("textarea1").innerHTML;
+      const txtInput = answer1;
+      clickmode="1";
+      // model=1;
+      useChatDetails(current_chat_id,current_event_id,current_agent_email,txtInput,clickmode,model);
+      // console.log("first text area value:"+txtInput)
+      // fields required for the "rich message" event, more info: https://developers.livechatinc.com/docs/messaging/agent-chat-api/
+     
+      const payload = {
+        chat_id: current_chat_id,
+        event: {
+          "type": "message",
+          "text":txtInput,
+          "visibility": "all"
+
+        }
+      };
+    
+
+      // send POST request to LiveChat API
+      axios.post('https://api.livechatinc.com/v3.1/agent/action/send_event',
+
+        // payload sent as body of the request
+        payload,
+        {
+          // required headers for the request
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + access_token
+          }
+        }
+      )
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+
+    const richMessage1 = () => {
+    // creating variable for a textbox
+    // const txtInput = document.getElementById("txtEdit").value;
+    // const txtInput = document.getElementById("textarea2").innerHTML;
+    const txtInput = answer2;
+    clickmode="1";
+    // model=1;
+    useChatDetails(current_chat_id,current_event_id,current_agent_email,txtInput,clickmode,model);
+
+    const payload = {
+    chat_id: current_chat_id,
+    event: {
+
+      "type": "message",
+    "text": txtInput,
+    "visibility": "all"
+    }
+};
+
+
+// send POST request to LiveChat API
+axios.post('https://api.livechatinc.com/v3.1/agent/action/send_event',
+
+ // payload sent as body of the request
+ payload,
+ {
+   // required headers for the request
+   headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer " + access_token
+   }
+ }
+)
+ .then(function (response) {
+   console.log(response);
+ })
+ .catch(function (error) {
+   console.log(error);
+ });
+}
+
+const richMessage2 = () => {
+    // creating variable for a textbox
+    // const txtInput = document.getElementById("txtEdit").value;
+    const txtInput = document.getElementById("answertext").innerHTML;
+    clickmode="1";
+    // model=1;
+    useChatDetails(current_chat_id,current_event_id,current_agent_email,txtInput,clickmode,model);
+
+    const payload = {
+    chat_id: current_chat_id,
+    event: {
+
+      "type": "message",
+    "text": txtInput,
+    "visibility": "all"
+    }
+};
+
+
+// send POST request to LiveChat API
+axios.post('https://api.livechatinc.com/v3.1/agent/action/send_event',
+
+ // payload sent as body of the request
+ payload,
+ {
+   // required headers for the request
+   headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer " + access_token
+   }
+ }
+)
+ .then(function (response) {
+   console.log(response);
+ })
+ .catch(function (error) {
+   console.log(error);
+ });
+}
+
+const richMessage3 = (txt) => {
+    // creating variable for a textbox
+    // const txtInput = document.getElementById("txtEdit").value;
+    // const txtInput = document.getElementById("textarea3").innerHTML;
+
+    const payload = {
+    chat_id: current_chat_id,
+    event: {
+
+      "type": "message",
+    "text": txt,
+    "visibility": "all"
+    }
+};
+
+
+// send POST request to LiveChat API
+axios.post('https://api.livechatinc.com/v3.1/agent/action/send_event',
+
+ // payload sent as body of the request
+ payload,
+ {
+   // required headers for the request
+   headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer " + access_token
+   }
+ }
+)
+ .then(function (response) {
+   console.log(response);
+ })
+ .catch(function (error) {
+   console.log(error);
+ });
+}
+
+
+const listAgents = () => {
+    // creating variable for a textbox
+    // const txtInput = document.getElementById("txtEdit").value;
+    // const txtInput = document.getElementById("textarea3").innerHTML;
+
+    const payload = {
+      "fields": [
+          "email_subscriptions",
+          "max_chats_count",
+          "job_title"
+        ],
+        "filters": {
+          "group_ids": [
+            0,
+            1
+          ]
+        }
+};
+
+
+// send POST request to LiveChat API
+axios.post('https://api.livechatinc.com/v3.1/configuration/action/list_agents ',
+
+ // payload sent as body of the request
+ payload,
+ {
+   // required headers for the request
+   headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer " + access_token
+   }
+ }
+)
+ .then(function (response) {
+   console.log("the agent details:"+response);
+ })
+ .catch(function (error) {
+   console.log(error);
+ });
+}
+
+const userAction = async (question1) => {
+    
+        const response = await fetch(baseUrl+question1+'&sentiment=0');
+        // const response = await f*etch('https://api.publicapis.org/entries');
+        myJson = await response.json(); //extract JSON from the http response
+        // console.log(myJson)
+        //console.log(myJson[0].answer_text)
+        return myJson
+        // do something with myJson
+        }
+const answerSentiment = async (question1) => {
+    // console.log('inside answersentiment: ' + question1);
+        const response = await fetch(baseUrl+question1+'&sentiment=1');
+        myJson = await response.json(); //extract JSON from the http response
+        // console.log(myJson)
+        return myJson
+        }
+
+const postChatDetails = async (chatid,eventid,agentemail,vistoremail,visitorid,question,answer,score,qspositive,qsnegative,qsneutral,qsresult,aspositive,asnegative,asneutral,asresult,noanswer,model) => {
+  fetch(eventPostUrl+'create', {
+     
+     // Adding method type
+     method: "POST",
+      
+     // Adding body or contents to send
+     body: JSON.stringify({
+      "chatid" :chatid,
+      "eventid": eventid,
+      "agentemail":agentemail,
+      "visitoremail":vistoremail,
+      "visitorid":visitorid,
+      "question":question,
+      "answer":answer,
+      "score":score,
+      "qspositive":qspositive,
+      "qsnegative":qsnegative,
+      "qsneutral":qsneutral,
+      "qsresult":qsresult,
+      "aspositive":aspositive,
+      "asnegative":asnegative,
+      "asneutral":asneutral,
+      "asresult":asresult,
+      "noanswer":noanswer,
+      "model":model,
+
+     }),
+      
+     // Adding headers to the request
+     headers: {
+         "Content-type": "application/json; charset=UTF-8"
+     }
+ })
+    
+        }
+
+const useChatDetails = async (chatid,eventid,agentemail,answer,clickmode) => {
+  fetch(eventPostUrl+'useedit', {
+     
+     // Adding method type
+     method: "POST",
+      
+     // Adding body or contents to send
+     body: JSON.stringify({
+      "chatid" :chatid,
+      "eventid": eventid,
+      "agentemail":agentemail,
+      "answer": answer,
+      "clickmode":clickmode,
+      
+
+     }),
+      
+     // Adding headers to the request
+     headers: {
+         "Content-type": "application/json; charset=UTF-8"
+     }
+ })
+    
+        
+        }
+
+const getTags = async () => {
+          
+
+        const payload = {
+        
+        "filters": {
+              "event_types": {
+                "values": ["message", "filled_form"]
+            }
+          }
+        };
+
+
+        // send POST request to LiveChat API
+        axios.post('https://api.livechatinc.com/v3.4/agent/action/list_archives',
+
+        // payload sent as body of the request
+        payload,
+        {
+        // required headers for the request
+        headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + access_token
+        }
+        }
+        )
+        .then(function (response) {
+        console.log(response);
+        })
+        .catch(function (error) {
+        console.log(error);
+        });
+    
+       
+}
+
+const getTags1 = async () => {
+          
+      console.log("chat_id inside getTag:"+current_chat_id);
+          const payload = {
+          chat_id: current_chat_id,
+          
+          // "filters": {
+          //       "event_types": {
+          //         "values": ["message", "filled_form"]
+          //     }
+          //   }
+          };
+
+  
+  
+          // send POST request to LiveChat API
+          axios.post('https://api.livechatinc.com/v3.4/agent/action/list_threads',
+  
+          // payload sent as body of the request
+          payload,
+          {
+          // required headers for the request
+          headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + access_token
+          }
+          }
+          )
+          .then(function (response) {
+          console.log(response);
+          })
+          .catch(function (error) {
+          console.log(error);
+          });
+      
+         
+  }
+
+        
+        
+// const processMessage = () => {
+//     const question2 = document.getElementById("textarea0").innerHTML;
+//     processQuestionAnswers(question2);
+   
+// }
+
+const processListMessage = (mode) => {
+
+  // mode : 1 - manual process list 2: auto send lastest question
+    // selected = sb.options.selected;
+    // console.log("selected: "+selected)
+    const list = document.getElementById("list");
+    console.log('processListMessage 1');
+    if(list.options.length>0){
+    if (mode ==1) {
+    question4=list.options[list.selectedIndex].text;
+    }
+    else if (mode ==2) {
+    question4=list.options[0].text;  // select the first item, which is the latest message
+    }
+    console.log('processListMessage 2');
+    console.log("selected id: "+list)
+    console.log("selected question: "+question4)
+    document.getElementById("textarea0").innerHTML=question4;
+    processQuestionAnswers(question4);
+   
+      }
+}
+ 
+const editMessage = () => {
+  
+    //const txtEdit = document.getElementById("textarea1").innerHTML;
+    const txtEdit = answer1;
+    clickmode="2";
+    // model=1;
+    useChatDetails(current_chat_id,current_event_id,current_agent_email,txtEdit,clickmode,model);
+    console.log(promise)
+    promise.then(widget => {
+    widget.putMessage(txtEdit).then(() => {
+      // the text should be appended now
+      console.log(txtEdit);
+      });
+    });
+    
+  }
+
+  const editMessage1 = () => {
+  
+  //const txtEdit = document.getElementById("textarea2").innerHTML;
+  const txtEdit = answer2;
+  clickmode="2";
+  // model=1;
+  useChatDetails(current_chat_id,current_event_id,current_agent_email,txtEdit,clickmode,model);
+  console.log(promise)
+  promise.then(widget => {
+  widget.putMessage(txtEdit).then(() => {
+    // the text should be appended now
+    console.log(txtEdit);
+    });
+  });
+  
+}
+
+const editMessage2 = () => {
+  
+  const txtEdit = document.getElementById("answertext").innerHTML;
+  clickmode="2";
+  // model=1;
+  useChatDetails(current_chat_id,current_event_id,current_agent_email,txtEdit,clickmode,model);
+  console.log(promise)
+  promise.then(widget => {
+  widget.putMessage(txtEdit).then(() => {
+    // the text should be appended now
+    console.log(txtEdit);
+    });
+  });
+  
+}
+
+const editMessage3 = () => {
+  
+  const txtEdit = document.getElementById("textarea3").innerHTML;
+  console.log(promise)
+  promise.then(widget => {
+  widget.putMessage(txtEdit).then(() => {
+    // the text should be appended now
+    console.log(txtEdit);
+    });
+  });
+  
+}
+
+const detailedView = () => {
+
+  document.getElementById("parent").style.display = "none";
+  document.getElementById("child").style.display = "block";
+  // child_element = document.querySelector('#child');
+	// child_element.style.visibility = 'visible';
+  // parent_element = document.querySelector('#parent');
+	// parent_element.style.visibility = 'hidden';
+  document.getElementById("answertext").innerHTML=answer1;
+  document.getElementById("questiontext").innerHTML=question5;
+  document.getElementById("score3").innerHTML=score1;
+ 
+  document.getElementById("positive").innerHTML=apositive;
+  document.getElementById("neutral").innerHTML=aneutral;
+  document.getElementById("negative").innerHTML=anegative;
+  
+  
+}
+
+const detailedView1 = () => {
+
+
+  document.getElementById("parent").style.display = "none";
+  document.getElementById("child").style.display = "block";
+  // child_element = document.querySelector('#child');
+	// child_element.style.visibility = 'visible';
+  // parent_element = document.querySelector('#parent');
+	// parent_element.style.visibility = 'hidden';
+  document.getElementById("answertext").innerHTML=answer2;
+  document.getElementById("questiontext").innerHTML=question5;
+  document.getElementById("score3").innerHTML=score2;
+  document.getElementById("positive").innerHTML=apositive1;
+  document.getElementById("neutral").innerHTML=aneutral1;
+  document.getElementById("negative").innerHTML=anegative1;
+  
+  
+}
+
+const basicView = () => {
+
+  document.getElementById("parent").style.display = "block";
+  document.getElementById("child").style.display = "none";
+
+// child_element = document.querySelector('#child');
+// child_element.style.visibility = 'hidden';
+// parent_element = document.querySelector('#parent');
+// parent_element.style.visibility = 'visible';
+
+
+
+}
+
+// const chatEventDetails = () => {
+
+//   // dict.id = (qarray.length + 1);
+//   dict.chatId=current_customer_id
+//   dict.eventId = event.id;
+//   dict.authorId = event.authorId;
+//   // dict.question = ;
+//   qarray.push({...dict});
+  
+  
+  
+// }
+
+// const alertBox = () => {
+//                 alert("There is no recommentation for this question pleaseuse the auto answers");
+//             }
+
+  
+   
+  </script>
+
+
+<div class="container-fluid" id="parent">
+  <div class="row">
+      <div class="col-xl-4 col-lg-9 col-md-11 col-sm-12 col-12">
+          <!-- <div class="header p-4"> -->
+             <!-- <form class="example">
+                 <button type="submit"><span class="iconify" data-icon="bx:search"></span></button>
+                 <input type="text" name="search">
+                
+               </form> -->
+          <!-- </div> -->
+      </div>
+  </div>
+<div class="row">
+    <div class="col-xl-4 col-lg-9 col-md-11 col-sm-12 col-12">
+       <div class="bg-livechat">
+           <div>
+               <!-- <h6 class="text-center">Recommendation system</h6> -->
+               <div class="row">
+                   <div class="col-md-12">
+                     <div class="chat-history mt-1 mb-3">
+                         <div class="d-flex justify-content-between">
+                             <h6 class="ml-2 chat-header"> Chat Questions</h6>
+                             <button class="btn btn-sm mr-2 mb-1" onclick="processListMessage(1)"><span class="iconify" data-icon="uim:process"></span></button>
+                         </div>
+                           <select id="list" name="list" size="3">
+                           <!-- <option>Why do Muslims pray ?</option>
+                           <option>Why do I need to fast during Ramadan?</option>
+                           <option>Who do Muslims follow Allah or Muhammad?</option> -->
+                           </select>
+                           <div class="row mt-2 justify-content-end">
+                               <div class="col-md-3 col-sm-3 col-3 mr-sm-2">
+                                 <!-- <button class="btn btn-edit btn-block" onclick="processListMessage(1)" >Process</button> -->
+                               </div>
+                           </div>
+                     </div>
+                   </div>
+               </div>
+    
+               <div>
+                   <div class="question mb-3 ml-2">
+                       <h6 id="textarea0"></h6>
+                       <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+
+                        <div class="mr-2">
+
+                            <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="qpositive"></span>
+
+                        </div>
+
+                        <!-- <div class="mr-2">|</div> -->
+
+                        <div class="mr-2">
+
+                            <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory " id="qneutral"></span>
+
+                        </div>
+
+                            <!-- <div class="mr-2">|</div> -->
+
+                        <div class="mr-2">
+
+                            <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="qnegative"></span>
+
+                        </div>
+
+                       
+
+                    </div>
+                     </div>
+
+                     <!-- div to show auto answers by default hidden-->
+                     <div class="row" id="auto-answer">
+                      <div class="col-md-12">
+                         <div class="answer">
+                          <div class="card p-3 border-0">
+                             <div class="row">
+                                <div class="col-md-10 col-sm-10 col-10 mt-4">
+                                  <p id="textarea3"></p>
+                                  <!-- <button class="btn btn-sm mb-1"  onclick="detailedView1()" id="more-button-2"><small>More..</small></button> -->
+                                  <!-- <a href="view-answer.html?flag=2" class="link-more" id="more-button-2">More...</a> -->
+                                 </div>
+                                 <div class="col-md-2 col-sm-2 col-2">
+                                  <div class="row">
+                                      <div class="col-md-12">
+                                       <button class="btn btn-sm mb-1" onclick="richMessage3()"><span class="iconify" data-icon="akar-icons:arrow-back-thick"></span></button>
+                                      </div>
+                                      <div class="col-md-12">
+                                       <button class="btn btn-sm" onclick="editMessage3()"><span class="iconify" data-icon="bx:edit"></span></span></button>
+                                   </div>
+                                  </div>
+                              </div>
+                               </div>
+
+                             </div>
+                         </div>
+                       
+                      </div>
+                  </div>
+
+
+
+
+                       <div class="answer" id="answer-div">
+                         <div class="row">
+                           <div class="col-md-12">
+
+                            <div class="card p-3 border-0" >
+                              <!-- <div id="answer1-div"> -->
+                              <div class="row">
+                                  <div class="col-md-12">
+                                     <div class="answer">
+                                       <!-- <small></small>&nbsp;<span class="badge badge-pill badge-success" id="score1"></span> -->
+                                       <div class="d-flex justify-content-end">
+
+                                        <span class="badge badge-pill badge-success" id="score1"></span>
+
+                                       </div>
+                                         <div class="row mt-2">
+                                             <div class="col-md-10 col-sm-10 col-10">
+                                              <p id="textarea1"> </p>
+                                              <button class="btn btn-sm mb-1 mt-2"  onclick="detailedView()" id="more-button-1">More..</button>
+                                              <!-- <a href="view-answer.html?flag=1" class="link-more" id="more-button-1">More...</a> -->
+                                             </div>
+                                             <div class="col-md-2 col-sm-2 col-2">
+                                                 <div class="row">
+                                                     <div class="col-md-12">
+                                                      <button class="btn btn-sm mb-1" onclick="richMessage()"><span class="iconify" data-icon="akar-icons:arrow-back-thick"></span></button>
+                                                     </div>
+                                                     <div class="col-md-12">
+                                                      <button class="btn btn-sm" onclick="editMessage()"><span class="iconify" data-icon="bx:edit"></span></span></button>
+                                                  </div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                   
+                                  </div>
+                              </div>
+                          
+                             <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+                                 <div class="mr-2">
+                                     <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="apositive"></span>
+                                 </div>
+                                 <!-- <div class="mr-2">|</div> -->
+                                 <div class="mr-2">
+                                     <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory " id="aneutral" ></span>
+                                 </div>
+                                     <!-- <div class="mr-2">|</div> -->
+                                 <div class="mr-2">
+                                     <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="anegative"></span>
+                                 </div>
+                                
+                             </div>
+                          <!-- </div> -->
+                          <div class="mt-3">
+                           
+                              <div class="row">
+                                  <div class="col-md-12">
+                                     <div class="answer">
+                                       <!-- <small>Score:</small>&nbsp;<span class="badge badge-pill badge-success" id="score2"></span> -->
+                                       <div class="d-flex justify-content-end">
+
+                                        <span class="badge badge-pill badge-success" id="score2"></span>
+
+                                       </div>
+                                         <div class="row mt-2">
+                                             <div class="col-md-10 col-sm-10 col-10">
+                                              <p id="textarea2"></p>
+                                              <button class="btn btn-sm mb-1 mt-2"  onclick="detailedView1()" id="more-button-2">More..</button>
+                                              <!-- <a href="view-answer.html?flag=2" class="link-more" id="more-button-2">More...</a> -->
+                                             </div>
+                                             <div class="col-md-2 col-sm-2 col-2">
+                                                 <div class="row">
+                                                     <div class="col-md-12">
+                                                      <button class="btn btn-sm mb-1" onclick="richMessage1()"><span class="iconify" data-icon="akar-icons:arrow-back-thick"></span></button>
+                                                     </div>
+                                                     <div class="col-md-12">
+                                                      <button class="btn btn-sm" onclick="editMessage1()"><span class="iconify" data-icon="bx:edit"></span></span></button>
+                                                  </div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                   
+                                  </div>
+                              </div>
+                          
+                             <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+                                 <div class="mr-2">
+                                     <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="apositive1"></span>
+                                 </div>
+                                 <!-- <div class="mr-2">|</div> -->
+                                 <div class="mr-2">
+                                     <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory " id="aneutral1"></span>
+                                 </div>
+                                     <!-- <div class="mr-2">|</div> -->
+                                 <div class="mr-2">
+                                     <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="anegative1"></span>
+                                 </div>
+                                
+                             </div>
+                           
+                          </div>
+                          
+                          </div>
+
+                           </div>
+                         </div>
+                         
+                         
+
+
+                       </div>
+                
+               </div>
+           </div>
+       </div>
+    </div>
+</div>
+</div>
+<!-- child div -->
+<div class="container-fluid" id="child">
+  <div class="row">
+      <div class="col-xl-4 col-sm-12 col-12">
+          <!-- <div class="header p-4"> -->
+             <!-- <form class="example">
+                 <button type="submit"><span class="iconify" data-icon="bx:search"></span></button>
+                 <input type="text" name="search">
+                
+               </form> -->
+          <!-- </div> -->
+      </div>
+  </div>
+  <div class="row">
+     <div class="col-xl-4 col-lg-9 col-md-11 col-sm-12 col-12">
+         <div class="bg-livechat">
+             <div>
+                 <div class="row result-back justify-content-end">
+                   <div class="col-xl-2 col-md-2 col-sm-4 col-4 mr-2">
+                       <!-- <a href="index.html"><button class="btn btn-sm"><small></span>Back to results</small></button></a> -->
+                       <button class="btn btn-sm" onclick="basicView()"><small></span>Back to results</small></button>
+                   </div>
+                 </div>
+              <div class="row mt-2">
+                 <div class="col-md-12">
+                     <div class="full-view">
+                         <div class="card p-3 border-0">
+                          <div class="row mb-2">
+
+                            <div class="col-md-12">
+
+                                <!-- <small>Score:</small>&nbsp;<span class="badge badge-pill badge-success" id="score3"></span> -->
+                                <div class="d-flex justify-content-end">
+
+                                  <span class="badge badge-pill badge-success" id="score3"></span>
+
+                                 </div>
+
+                            </div>
+
+                        </div>
+                             <div class="row">
+                                 <div class="col-md-10 col-sm-8 col-8">
+                                     
+                                     <h6 id="questiontext"></h6>
+                                 </div>
+                                 <div class="col-md-2 col-sm-4 col-4 ">
+                                     <button class="btn btn-sm"><span class="iconify" data-icon="akar-icons:arrow-back-thick" onclick="richMessage2()" ></span></button>
+                                     <button class="btn btn-sm"><span class="iconify" data-icon="bx:edit" onclick="editMessage2()"></span></span></button>
+                                   
+                                 </div>
+                             </div>
+                             <small>Added by Nisam kareem</small>
+                             <div>
+                                 <div class="row mt-2">
+                                     <div class="col-md-12">
+                                        <div class="answer">
+                                            <p id="answertext">
+                                              </p>
+                                           
+                                        </div>
+                                      
+                                     </div>
+                                 </div>
+                             
+                                <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+                                    <div class="mr-2">
+                                        <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="positive"></span>
+                                    </div>
+                                    <!-- <div class="mr-2">|</div> -->
+                                    <div class="mr-2">
+                                        <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory" id="neutral"></span>
+                                    </div>
+                                        <!-- <div class="mr-2">|</div> -->
+                                    <div class="mr-2">
+                                        <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="negative"></span>
+                                    </div>
+                                   
+                                </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+                   
+             </div>
+         </div>
+     </div>
+  </div>
+
+
+</div>
+
+
+ <script src="https://code.iconify.design/2/2.1.2/iconify.min.js"></script>    
+ <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" ></script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

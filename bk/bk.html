@@ -1,0 +1,191 @@
+
+<div class="container-fluid" id="parent">
+    <div class="row">
+        <div class="col-xl-4 col-lg-9 col-md-11 col-sm-12 col-12">        
+        </div>
+    </div>
+  <div class="row">
+      <div class="col-xl-4 col-lg-9 col-md-11 col-sm-12 col-12">
+         <div class="bg-livechat">
+             <div>               
+                 <div class="row">
+                     <div class="col-md-12">
+                       <div class="chat-history mt-1 mb-3">
+                           <div class="d-flex justify-content-between">
+                               <h6 class="ml-2 chat-header"> Chat Questions</h6>
+                               <button class="btn btn-sm mr-2 mb-1" onclick="processListMessage(1)"><span class="iconify" data-icon="uim:process"></span></button>
+                           </div>
+                             <select id="list" name="list" size="3">                
+                             </select>
+                             <div class="row mt-2 justify-content-end">
+                                 <div class="col-md-3 col-sm-3 col-3 mr-sm-2">                                 
+                                 </div>
+                             </div>
+                       </div>
+                     </div>
+                 </div>
+      
+                 <div>
+                     <div class="question mb-3 ml-2">
+                         <h6 id="textarea0"></h6>
+                         <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+  
+                          <div class="mr-2">
+                              <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="qpositive"></span>
+                          </div>
+  
+                          <div class="mr-2">
+                              <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory " id="qneutral"></span>
+                          </div>
+                          <div class="mr-2">
+                              <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="qnegative"></span>
+                          </div>
+  
+                      </div>
+                       </div>
+                       
+                       <div class="row" id="auto-answer">
+                        <div class="col-md-12">
+                           <div class="answer">
+                            <div class="card p-3 border-0">
+                               <div class="row">
+                                  <div class="col-md-10 col-sm-10 col-10 mt-4">
+                                    <p id="textarea3"></p>                                
+                                   </div>
+                                   <div class="col-md-2 col-sm-2 col-2">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                         <button class="btn btn-sm mb-1" onclick="richMessage3()"><span class="iconify" data-icon="akar-icons:arrow-back-thick"></span></button>
+                                        </div>
+                                        <div class="col-md-12">
+                                         <button class="btn btn-sm" onclick="editMessage3()"><span class="iconify" data-icon="bx:edit"></span></span></button>
+                                     </div>
+                                    </div>
+                                </div>
+                                 </div>
+  
+                               </div>
+                           </div>
+                         
+                        </div>
+                    </div>
+                   
+                    <div class="row" id="no-recommendation-div">
+                      <div class="col-md-12">
+                        <div class="d-flex justify-content-start mb-2">
+                          <span class="badge badge-pill badge-success" >No recommendation</span>    
+                         </div>
+                      </div>
+                    </div>                  
+  
+                         <div class="answer" id="answer-div">
+                           <div class="row">
+                             <div class="col-md-12">
+  
+                              <div class="card p-3 border-0" >                             
+                                <div class="row">
+                                    <div class="col-md-12">
+                                       <div class="answer">                                       
+                                         <div class="d-flex justify-content-end">
+  
+                                          <span class="badge badge-pill badge-success" id="score1"></span>
+  
+                                         </div>
+                                           <div class="row mt-2">
+                                               <div class="col-md-10 col-sm-10 col-10">
+                                                <p id="textarea1"> </p>
+                                                <button class="btn btn-sm mb-1 mt-2"  onclick="detailedView()" id="more-button-1">More..</button>                                              
+                                               </div>
+                                               <div class="col-md-2 col-sm-2 col-2">
+                                                   <div class="row">
+                                                       <div class="col-md-12">
+                                                        <button class="btn btn-sm mb-1" onclick="richMessage()"><span class="iconify" data-icon="akar-icons:arrow-back-thick"></span></button>
+                                                       </div>
+                                                       <div class="col-md-12">
+                                                        <button class="btn btn-sm" onclick="editMessage()"><span class="iconify" data-icon="bx:edit"></span></span></button>
+                                                    </div>
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       </div>
+                                     
+                                    </div>
+                                </div>
+                            
+                               <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+                                   <div class="mr-2">
+                                       <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="apositive"></span>
+                                   </div>                              
+                                   <div class="mr-2">
+                                       <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory " id="aneutral" ></span>
+                                   </div>                                     
+                                   <div class="mr-2">
+                                       <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="anegative"></span>
+                                   </div>
+                                  
+                               </div>
+                        
+                            <div class="mt-3">
+                             
+                                <div class="row">
+                                    <div class="col-md-12">
+                                       <div class="answer">                                      
+                                         <div class="d-flex justify-content-end">
+                                          <span class="badge badge-pill badge-success" id="score2"></span>
+  
+                                         </div>
+                                           <div class="row mt-2">
+                                               <div class="col-md-10 col-sm-10 col-10">
+                                                <p id="textarea2"></p>
+                                                <button class="btn btn-sm mb-1 mt-2"  onclick="detailedView1()" id="more-button-2">More..</button>                                              
+                                               </div>
+                                               <div class="col-md-2 col-sm-2 col-2">
+                                                   <div class="row">
+                                                       <div class="col-md-12">
+                                                        <button class="btn btn-sm mb-1" onclick="richMessage1()"><span class="iconify" data-icon="akar-icons:arrow-back-thick"></span></button>
+                                                       </div>
+                                                       <div class="col-md-12">
+                                                        <button class="btn btn-sm" onclick="editMessage1()"><span class="iconify" data-icon="bx:edit"></span></span></button>
+                                                    </div>
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       </div>
+                                     
+                                    </div>
+                                </div>
+                            
+                               <div class="row sentiment-answer flex mx-1 bg-p-1 mt-2">
+                                   <div class="mr-2">
+                                       <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span class="percent text-success" id="apositive1"></span>
+                                   </div>
+                                   
+                                   <div class="mr-2">
+                                       <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span class="percent text-secondory " id="aneutral1"></span>
+                                   </div>
+                                   
+                                   <div class="mr-2">
+                                       <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span class="percent text-danger" id="anegative1"></span>
+                                   </div>
+                                  
+                               </div>
+                             
+                            </div>
+                            
+                            </div>
+  
+                             </div>
+                           </div>
+                           
+                           
+  
+  
+                         </div>
+                  
+                 </div>
+             </div>
+         </div>
+      </div>
+  </div>
+  </div>
+  

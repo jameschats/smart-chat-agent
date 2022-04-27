@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommendation System 2</title>
+  <!-- Axios library for API calls -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <!-- Sign in with LiveChat SDK -->
+  <script src="https://cdn.livechatinc.com/accounts/accounts-sdk.min.js"></script>
+
+  <!-- LiveChat Agent App SDK -->
+  <script src="https://unpkg.com/@livechat/agent-app-sdk@latest/dist/agentapp.umd.min.js"></script>
+  
+  <!-- LiveChat customer App SDK -->
+  <!-- <script src="https://unpkg.com/@livechat/customer-sdk@3.1.0"></script> -->
+  <script src="https://unpkg.com/@livechat/customer-sdk@3.1.0"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+  
+
+  <link rel="stylesheet" href="style.css">
+
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins" />
+
+
+  <!-- <script> import { createDetailsWidget } from "@livechat/agent-app-sdk"; </script> -->
+  
+</head>
+
+
+<body>
+  
+  
+
+  
+  
+  
+  <!-- Sign in with LiveChat Button -->
+  <a href="" onclick="instance.openPopup()">
+    <div id="livechat-login-button" class="livechat-login-button"></div>
+  </a>
+
+  <!-- Obtaining data about an authorized user -->
+  <script>
+    let access_token;
+    var current_chat_id;
+    var current_customer_id;
+    var current_customer_name;
+    var showRecommendation;
+    var min_sentiment_score = 70;
+    const qlist = [];
+    var qarray = [];
+    
+    const baseUrl='http://localhost:105/processanswers/?query='
+    // const baseUrl='http://localhost:105/processanswers/?'
+    // const baseUrl1='http://localhost:107/processanswers-with-sentiment/?query='
+
+    // initiates the SDK and returns the accountsSdk object instance
+    const instance = AccountsSDK.init({
+      // obtained from the Developers Console when you create your app
+      // client_id: "53e59464b2122e418a5ec4c80de5965e",
+      client_id: "a715e417b7201b993f9286a8c24af754",
+                  
+
+      // the callback executed when user's identity is fetched
+      onIdentityFetched: (error, data) => {
+        if (data) {
+          // in console, shows information about user being authorized (optional)
+          console.log("User authorized!");
+          // hides the Sign in with LiveChat button
+          document.getElementById("livechat-login-button").style.display = "none";
+          // shows the form for sending a card
+          document.getElementById("livechat-widget-form").style.display = "block";
+          // shows the user's license number in console (optional)
+          console.log("License number: " + data.license);
+          liid=data.license
+          // sets access_token
+          access_token = data.access_token;
+          console.log("access token:"+ access_token);
+          // shows errors in console (optional)
+          console.log(error);
+          
+        }
+      }
+    });
+    console.log("0")
+    console.log("1")
+
+    const customerSDK = CustomerSDK.init({
+        licenseId: 7499411,
+        clientId: "a715e417b7201b993f9286a8c24af754",
+        })
+        console.log("2")
+        console.log("3")
+        customerSDK.on('customer_id', id => {
+        console.log('customer id is', id)
+        customer_id=id
+        })
+        console.log("4")
+        // if(length(customer_id>35)){
+        customerSDK.on('incoming_event', payload => {
+        const { chat, event } = payload
+        console.log('new event type - ', event.type)
+        console.log('chat details: ' + chat)
+        switch (event.type) {
+        case 'message':
+        // console.log('new event - ', event.type)
+        console.log('new event - ', event)
+        console.log('new message - ', event.text)
+        
+        // const message=event.text
+        // checking the message is from customer
+        
+        
+        //question=event.text
+       //qlist.push(question);
+          // console.log(qlist)
+          
+          var dict = {};
+          // var qarray = [];
+         // let len =  qlist.length
+          
+          //for (let i = 0; i < len; i++) {
+          dict.id = (qarray.length + 1);
+          dict.authorId = (event.authorId);
+          dict.question = event.text;
+          qarray.push({...dict});
+         // }
+          // updateListbox();
+          createListbox();
+          
+          // let qitems=document.getElementById("id1")
+          // for (let item of qarray) {
+          //   console.log(item.authorId);
+          //   console.log(current_customer_id);
+          //   if(item.authorId== current_customer_id){
+          //     let li=document.createElement('li');
+          //     li.innerText=item.question;
+          //     qitems.appendChild(li);
+          //     console.log(li);
+          //   }
+          // }
+          
+          
+         // console.log(qitems);
+          console.log(JSON.stringify(qarray));
+        
+          
+        console.log('current_customer_id: ' + current_customer_id)
+        console.log('event.authorId: ' + event.authorId)
+        if (event.authorId==current_customer_id){
+          document.getElementById("textarea0").value=event.text
+          question5=event.text
+         
+        processQuestionAnswers(question5);
+
+        
+        // if (event.text!=null){
+        //   answer=userAction(question);
+        //   answer.then( response => {
+        //   console.log('Received response:'+response);
+        //   console.log(response[0].answer_text);
+        
+        //   // resetTextArea();
+         
+         
+        //   if(response.length>0){
+        //   document.getElementById("textarea2").value ="";
+          
+        //   document.getElementById("textarea1").value =response[0].answer_text;
+          
+        //   document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+        //   document.getElementById("qpositive").innerHTML =(parseFloat(response[0].question_sentiment.positive*100).toFixed(1)).toString()+"%";
+        //   document.getElementById("qneutral").innerHTML =(parseFloat(response[0].question_sentiment.neutral*100).toFixed(1)).toString()+"%";
+        //   document.getElementById("qnegative").innerHTML =(parseFloat(response[0].question_sentiment.negative*100).toFixed(1)).toString()+"%";
+        //   }
+        //   if(response.length>1){
+            
+        //   document.getElementById("textarea2").value =response[1].answer_text;
+        //   document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+        //   }
+        // });
+         
+        
+        // }
+
+      
+    }
+    
+    break
+    default:
+    break
+  
+    }
+    })
+    // .catch(error => console.log('customerSDK incoming_event error : ' + error.message));
+        // }
+        
+
+  // console.log("5")  
+  // console.log('chat message 1');
+  // console.log('chat message 2');
+  var promise=LiveChat.createDetailsWidget()
+  // console.log(promise)
+
+    
+  LiveChat.createDetailsWidget().then(function (widget) {
+      // console.log(widget)
+      // console.log("inside editmessage:1")
+      //publicWidget = widget;
+      // console.log("inside editmessage:2")
+      
+      //console.log(publicWidget)
+      // condition that is emitted when an agent opens a conversation within Chats
+      widget.on("customer_profile", data => {
+        // shows customer data in console (optional)
+        console.log(data);
+        // console.log(data.chat.chat_id);
+        // sets chat_id
+        current_chat_id = data.chat.chat_id;
+        current_customer_id = data.id;
+        current_customer_name = data.name;
+
+        console.log("customer_id : "+current_customer_id)
+        console.log("inside createDetailsWidget() : "+current_chat_id)
+        resetTextArea();
+        // updateListbox();
+        createListbox();
+        processListMessage(2);  
+        console.log("reset textarea done")
+      });
+    })    
+    .catch(error => console.log('outer error : ' + error.message));
+
+    const processQuestionAnswers =(question3) => {
+      if (question3!=null){
+          // console.log("question inside processQuestionAnswers "+question3)
+          answer=userAction(question3);
+          // sentiment=answerSentiment(question3);
+          answer.then( response => {  
+          console.log('Received response:'+response);
+          console.log('0a')
+          console.log(response[0].answer_text);        
+          // resetTextArea();       
+          console.log('0b')
+          showRecommendation=0;
+          // check if both scores are less than 20, then set the response label text 
+          // for (let i = 0; i < response.length; i++){
+          //     console.log("inside for "+response[i].answer_score)
+          //   }
+          if(response.length>0){
+            // score1=parseFloat(response[0].answer_score*100 ).toFixed(1);
+            
+            score1=(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            // score2=parseFloat(parseFloat(response[1].answer_score).toFixed(4)*100 >= 20);
+            console.log("score1 "+score1)
+            // console.log("score1 "+score1a)
+          console.log('1a')
+          document.getElementById("textarea1").value ="";
+          document.getElementById("score1").innerHTML ="";
+          document.getElementById("apositive").innerHTML ="";
+          document.getElementById("aneutral").innerHTML ="";
+          document.getElementById("anegative").innerHTML ="";
+          document.getElementById("textarea2").value ="";
+          document.getElementById("score2").innerHTML ="";
+          document.getElementById("apositive1").innerHTML ="";
+          document.getElementById("aneutral1").innerHTML ="";
+          document.getElementById("anegative1").innerHTML ="";
+          
+          // document.getElementById("textarea1").value =response[0].answer_text;
+          
+          console.log('1b')
+          if(score1>= min_sentiment_score){
+          showRecommendation =1;
+          console.log("score1:"+showRecommendation)
+          document.getElementById("textarea1").value =response[0].answer_text;
+          
+          // document.getElementById("score1").innerHTML =(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()+"%";
+          document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+          document.getElementById("qpositive").innerHTML =(parseFloat(response[0].question_sentiment.positive*100).toFixed(1)).toString()+"%";
+          document.getElementById("qneutral").innerHTML =(parseFloat(response[0].question_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          document.getElementById("qnegative").innerHTML =(parseFloat(response[0].question_sentiment.negative*100).toFixed(1)).toString()+"%";
+          }
+          console.log('1c')
+          }
+          if(response.length>1){
+            score2=(parseFloat(parseFloat(response[1].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            console.log("score2: "+score2)
+            
+            console.log('2a')
+          if(score2>= min_sentiment_score){
+          showRecommendation=1;
+          console.log("score2:"+showRecommendation)
+          document.getElementById("textarea2").value =response[1].answer_text;
+          document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+          
+          }
+          }
+
+            //
+        // resetTextArea();
+        console.log('showRecommendation a')
+        console.log('showRecommendation a:'+showRecommendation)
+        if(showRecommendation==0){
+          console.log('showRecommendation b')
+          console.log('showRecommendation value'+showRecommendation)
+          // document.getElementById("demo").innerHTML  = "No Recommenation";
+          document.getElementById("textareatest").value ="No Recommenation";
+        }
+        else{
+          // document.getElementById("demo").innerHTML  = "";
+          console.log('showRecommendation c')
+          console.log('showRecommendation value '+showRecommendation)
+          document.getElementById("textareatest").value ="";
+        }
+          
+        });
+        
+      
+
+        sentiment=answerSentiment(question3);
+        //  the response from setiment api
+        sentiment.then( response => { 
+
+          if(response.length>0){
+        
+            score1=(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            
+            // console.log("score1 "+score1)
+            // document.getElementById("textarea2").value ="";
+            // document.getElementById("score2").innerHTML ="";
+          if(score1>= min_sentiment_score){
+          // document.getElementById("textarea1").value =response[0].answer_text;
+          // document.getElementById("score1").innerHTML =(parseFloat(parseFloat(response[0].answer_score).toFixed(4)*100).toFixed(1)).toString()+"%";
+          // document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+          document.getElementById("apositive").innerHTML =(parseFloat(response[0].answer_sentiment.positive*100).toFixed(1)).toString()+"%";
+          document.getElementById("aneutral").innerHTML =(parseFloat(response[0].answer_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          document.getElementById("anegative").innerHTML =(parseFloat(response[0].answer_sentiment.negative*100).toFixed(1)).toString()+"%";
+          }
+        
+          }
+          if(response.length>1){
+            score2=(parseFloat(parseFloat(response[1].answer_score).toFixed(4)*100).toFixed(1)).toString()
+            // console.log("score2: "+score2)
+            
+           
+          if(score2>= min_sentiment_score){
+          // document.getElementById("textarea2").value =response[1].answer_text;
+          // document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+          document.getElementById("apositive1").innerHTML =(parseFloat(response[1].answer_sentiment.positive*100).toFixed(1)).toString()+"%";
+          document.getElementById("aneutral1").innerHTML =(parseFloat(response[1].answer_sentiment.neutral*100).toFixed(1)).toString()+"%";
+          document.getElementById("anegative1").innerHTML =(parseFloat(response[1].answer_sentiment.negative*100).toFixed(1)).toString()+"%";
+         
+            }
+          }
+        
+
+        }); 
+
+       
+        }
+       
+    }
+
+    const resetTextArea = () => {
+      document.getElementById("textarea0").value = "";
+      document.getElementById("textarea1").value = "";
+      document.getElementById("textarea2").value = ""; 
+      document.getElementById("textareatest").value = ""; 
+      document.getElementById("score1").innerHTML ="";
+      document.getElementById("score2").innerHTML ="";
+      document.getElementById("qpositive").innerHTML ="";
+      document.getElementById("qneutral").innerHTML ="";
+      document.getElementById("qnegative").innerHTML ="";
+      document.getElementById("apositive").innerHTML ="";
+      document.getElementById("aneutral").innerHTML ="";
+      document.getElementById("anegative").innerHTML ="";
+      document.getElementById("apositive1").innerHTML ="";
+      document.getElementById("aneutral1").innerHTML ="";
+      document.getElementById("anegative1").innerHTML ="";
+      }
+
+    const updateListbox=()=>{
+      let qitems=document.getElementById("id1")
+      qitems.innerHTML="";
+          for (let item of qarray) {
+            console.log(item.authorId);
+            console.log(current_customer_id);
+            if(item.authorId== current_customer_id){
+              let li=document.createElement('li');
+              li.innerText=item.question;
+              qitems.appendChild(li);
+              console.log(li);
+            }
+          }
+    }
+
+    
+    // const createListbox=()=>{
+    //   // let qitems=document.getElementById("selectbox")
+    //   const sb = document.querySelector('#list');
+    //   sb.innerHTML="";
+    //       for (let item of qarray) {
+    //         console.log(item.authorId);
+    //         console.log(current_customer_id);
+    //         if(item.authorId== current_customer_id){
+    //             // create a new option
+    //           const option = new Option(item.question, item.id);
+    //           // add it to the list
+    //           sb.add(option, undefined);
+              
+    //         }
+    //       }
+    // }
+    const createListbox=()=>{
+      // let qitems=document.getElementById("selectbox")
+      const sb = document.querySelector('#list');
+      sb.innerHTML="";
+      qarray.slice().reverse().forEach(function(item) {
+            console.log(item.authorId);
+            console.log(current_customer_id);
+            if(item.authorId== current_customer_id){
+                // create a new option
+              const option = new Option(item.question, item.id);
+              // add it to the list
+              sb.add(option, undefined); 
+            }
+            console.log(item);
+        });
+          // for (let item of qarray) {
+            
+          // }
+    }
+
+    const richMessage = () => {
+       // creating variable for a textbox      
+       console.log("chat id inside richMessage :"+current_chat_id)
+      
+      const txtInput = document.getElementById("textarea1").value;
+      // console.log("first text area value:"+txtInput)
+      // fields required for the "rich message" event, more info: https://developers.livechatinc.com/docs/messaging/agent-chat-api/
+     
+      const payload = {
+        chat_id: current_chat_id,
+        event: {
+          "type": "message",
+          "text":txtInput,
+          "visibility": "all"
+
+        }
+      };
+    
+
+      // send POST request to LiveChat API
+      axios.post('https://api.livechatinc.com/v3.1/agent/action/send_event',
+
+        // payload sent as body of the request
+        payload,
+        {
+          // required headers for the request
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + access_token
+          }
+        }
+      )
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+
+    const richMessage1 = () => {
+    // creating variable for a textbox
+    // const txtInput = document.getElementById("txtEdit").value;
+    const txtInput = document.getElementById("textarea2").value;
+
+    const payload = {
+    chat_id: current_chat_id,
+    event: {
+
+      "type": "message",
+    "text": txtInput,
+    "visibility": "all"
+    }
+};
+
+
+// send POST request to LiveChat API
+axios.post('https://api.livechatinc.com/v3.1/agent/action/send_event',
+
+ // payload sent as body of the request
+ payload,
+ {
+   // required headers for the request
+   headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer " + access_token
+   }
+ }
+)
+ .then(function (response) {
+   console.log(response);
+ })
+ .catch(function (error) {
+   console.log(error);
+ });
+}
+
+const userAction = async (question1) => {
+    console.log('inside useraction: ' + question1);
+        const response = await fetch(baseUrl+question1+'&sentiment=0');
+        // const response = await f*etch('https://api.publicapis.org/entries');
+        myJson = await response.json(); //extract JSON from the http response
+        // console.log(myJson)
+        //console.log(myJson[0].answer_text)
+        return myJson
+        // do something with myJson
+        }
+const answerSentiment = async (question1) => {
+    // console.log('inside answersentiment: ' + question1);
+        const response = await fetch(baseUrl+question1+'&sentiment=1');
+        myJson = await response.json(); //extract JSON from the http response
+        // console.log(myJson)
+        return myJson
+        }
+
+const getTags = async () => {
+          
+
+        const payload = {
+        
+        "filters": {
+              "event_types": {
+                "values": ["message", "filled_form"]
+            }
+          }
+        };
+
+
+        // send POST request to LiveChat API
+        axios.post('https://api.livechatinc.com/v3.4/agent/action/list_archives',
+
+        // payload sent as body of the request
+        payload,
+        {
+        // required headers for the request
+        headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + access_token
+        }
+        }
+        )
+        .then(function (response) {
+        console.log(response);
+        })
+        .catch(function (error) {
+        console.log(error);
+        });
+    
+       
+}
+
+const getTags1 = async () => {
+          
+      console.log("chat_id inside getTag:"+current_chat_id);
+          const payload = {
+          chat_id: current_chat_id,
+          
+          // "filters": {
+          //       "event_types": {
+          //         "values": ["message", "filled_form"]
+          //     }
+          //   }
+          };
+
+  
+  
+          // send POST request to LiveChat API
+          axios.post('https://api.livechatinc.com/v3.4/agent/action/list_threads',
+  
+          // payload sent as body of the request
+          payload,
+          {
+          // required headers for the request
+          headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + access_token
+          }
+          }
+          )
+          .then(function (response) {
+          console.log(response);
+          })
+          .catch(function (error) {
+          console.log(error);
+          });
+      
+         
+  }
+
+        
+        
+const processMessage = () => {
+    const question2 = document.getElementById("textarea0").value;
+    processQuestionAnswers(question2);
+    // if (question!=null){
+    //       answer=userAction(question);
+    //       answer.then( response => {
+    //       console.log('Received response:'+response);
+    //       console.log(response[0].answer_text);
+    //       resetTextArea();
+      
+    //       if(response.length>0){
+    //       document.getElementById("textarea2").value ="";
+    //       document.getElementById("textarea1").value =response[0].answer_text;
+    //       document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+    //       document.getElementById("qpositive").innerHTML =(parseFloat(response[0].question_sentiment.positive*100).toFixed(1)).toString()+"%";
+    //       document.getElementById("qneutral").innerHTML =(parseFloat(response[0].question_sentiment.neutral*100).toFixed(1)).toString()+"%";
+    //       document.getElementById("qnegative").innerHTML =(parseFloat(response[0].question_sentiment.negative*100).toFixed(1)).toString()+"%";
+    //       }
+    //       if(response.length>1){
+    //       document.getElementById("textarea2").value =response[1].answer_text;
+    //       document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+    //       }
+    //     });
+         
+        
+    //     }
+}
+
+const processListMessage = (mode) => {
+
+  // mode : 1 - manual process list 2: auto send lastest question
+    // selected = sb.options.selected;
+    // console.log("selected: "+selected)
+    const list = document.getElementById("list");
+    console.log('processListMessage 1');
+    if(list.options.length>0){
+    if (mode ==1) {
+    question4=list.options[list.selectedIndex].text;
+    }
+    else if (mode ==2) {
+    question4=list.options[0].text;  // select the first item, which is the latest message
+    }
+    console.log('processListMessage 2');
+    console.log("selected id: "+list)
+    console.log("selected question: "+question4)
+    document.getElementById("textarea0").value=question4
+    processQuestionAnswers(question4);
+    // if (question4!=null){
+    //       document.getElementById("textarea0").value=question4
+    //       answer=userAction(question4);
+    //       answer.then( response => {
+    //       console.log('Received response:'+response);
+    //       console.log(response[0].answer_text);
+        
+
+    //       if(response.length>0){
+    //       document.getElementById("textarea2").value ="";
+    //       document.getElementById("textarea1").value =response[0].answer_text;
+    //       document.getElementById("score1").innerHTML =(parseFloat(response[0].answer_score*100).toFixed(1)).toString()+"%";
+    //       document.getElementById("qpositive").innerHTML =(parseFloat(response[0].question_sentiment.positive*100).toFixed(1)).toString()+"%";
+    //       document.getElementById("qneutral").innerHTML =(parseFloat(response[0].question_sentiment.neutral*100).toFixed(1)).toString()+"%";
+    //       document.getElementById("qnegative").innerHTML =(parseFloat(response[0].question_sentiment.negative*100).toFixed(1)).toString()+"%";
+    //       }
+    //       if(response.length>1){
+    //       document.getElementById("textarea2").value =response[1].answer_text;
+    //       document.getElementById("score2").innerHTML =(parseFloat(response[1].answer_score*100).toFixed(1)).toString()+"%";
+    //       }
+    //     });
+         
+        
+    //     }
+      }
+}
+ 
+const editMessage = () => {
+  
+    const txtEdit = document.getElementById("textarea1").value;
+    console.log(promise)
+    promise.then(widget => {
+    widget.putMessage(txtEdit).then(() => {
+      // the text should be appended now
+      console.log(txtEdit);
+      });
+    });
+    
+  }
+
+  const editMessage1 = () => {
+  
+  const txtEdit = document.getElementById("textarea2").value;
+  console.log(promise)
+  promise.then(widget => {
+  widget.putMessage(txtEdit).then(() => {
+    // the text should be appended now
+    console.log(txtEdit);
+    });
+  });
+  
+}
+
+  
+   
+  </script>
+
+
+
+<div class="container-fluid" id="livechat-widget-form">
+   <div class="row">
+       <div class="col-xl-4 col-lg-9 col-md-11 col-sm-12 col-12">
+          <div class="bg-livechat">
+              <div >
+                  <h6 class="text-center">Recommendation system</h6>
+                  <div >
+                    <div class="row">
+
+                      <div class="col-md-12">
+
+                        <div class="chat-history mt-1 mb-3">
+
+                              <h6 class="ml-2 chat-header" id="visitorchatheader">Visitor Chat History</h6>
+
+                              <select id="list" name="list" size="3">
+                             
+                              </select>
+
+                              <div class="row mt-2 justify-content-end">
+
+                                  <div class="col-md-3 col-sm-3 col-3 mr-sm-2">
+
+                                    <button class="btn btn-edit btn-block" onclick="processListMessage(1)" >Process</button>
+
+                                  </div>
+
+                              </div>
+
+                        </div>
+
+                      </div>
+
+                  </div>
+                    
+                    <!-- <div>
+                      <select id="list" name="list" size="3">
+                      </select>
+                      <div class="col-md-3 col-sm-4 col-4">
+                        <button class="btn btn-edit" onclick="processListMessage(1)" >Process</button>                      
+                     </div> -->
+                    </div>
+                      <div class="question mb-5">
+                          <h6 class="text-white">Question</h6>
+                          <div class="form-group">
+                            <textarea class="form-control" id="textarea0" rows="3"></textarea>
+                          </div>
+                          <!-- <div class="col-md-3 col-sm-4 col-4">
+                            <button class="btn btn-edit" id="process1" onclick="processMessage()" >Process</button>                      
+                         </div> -->
+                      
+                        <div class="row sentiment-question flex mx-1 bg-p-1">
+                            <div class="mr-2">
+                                <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span id="qpositive" class="percent text-success"></span>
+                            </div>
+                            <div class="mr-2">|</div>
+                            <div class="mr-2">
+                                <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span id="qneutral" class="percent text-secondory "></span>
+                            </div>
+                                <div class="mr-2">|</div>
+                            <div class="mr-2">
+                                <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span id="qnegative" class="percent text-danger"></span>
+                            </div>
+                           
+                        </div>
+                      </div>
+
+                      <div class="row">
+
+                        <div class="col-md-12">
+  
+                          <div >
+  
+                                <!-- <p class="ml-2 chat-header" id="demo"></p> -->
+                                <div class="form-group">
+                                  <textarea class="form-control" id="textareatest" rows="2"></textarea>
+                                </div>
+  
+                                
+  
+                                <!-- <div class="row mt-2 justify-content-end">
+  
+                                    <div class="col-md-3 col-sm-3 col-3 mr-sm-2">
+  
+                                      <button class="btn btn-edit btn-block" onclick="processListMessage(1)" >Process</button>
+  
+                                    </div>
+  
+                                </div> -->
+  
+                          </div>
+  
+                        </div>
+  
+                    </div>
+                   
+                        
+                   
+                    <div class="info-part mt-4">
+                        <div class="row justify-content-end">
+                            <div class="col-md-2 col-3 col-sm-3">
+                                <span class="badge" id="score1"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-control" id="textarea1" rows="5"></textarea>
+                          </div>
+                          <div class="row">
+                              <div class="col-md-9 col-sm-8 col-8">
+                                <div class="answer-sentiment">
+                                    <div class="row flex mx-1 p-1">
+                                        <div class="mr-2">
+                                            <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span id="apositive" class="percent text-success"></span>
+                                        </div>
+                                        <div class="mr-2">|</div>
+                                        <div class="mr-2">
+                                            <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span id="aneutral" class="percent text-secondory"></span>
+                                        </div>
+                                            <div class="mr-2">|</div>
+                                        <div class="mr-2">
+                                            <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span id="anegative" class="percent text-danger"></span>
+                                        </div>
+                                       
+                                    </div>
+
+                              </div>
+                              </div>
+                              
+                              <div class="col-md-3 col-sm-4 col-4">
+                                <button class="btn btn-edit" onclick="editMessage()" >Edit</button>
+                                <button class="btn btn-use" onclick="richMessage()">Use</button>
+                                <!-- <button class="btn btn-use" onclick="getTags1()">Tags</button> -->
+                             </div>
+                          
+                              </div>
+                           
+                        
+                              </div>
+                              <div class="info-part mt-5">
+                                <div class="row justify-content-end">
+                                    <div class="col-md-2 col-3 col-sm-3">
+                                        <span class="badge" id="score2"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <textarea class="form-control" id="textarea2" rows="5"></textarea>
+                                  </div>
+                                  <div class="row">
+                                      <div class="col-md-9 col-sm-8 col-8">
+                                        <div class="answer-sentiment">
+                                            <div class="row flex mx-1 p-1">
+                                                <div class="mr-2">
+                                                    <span class="iconify" data-icon="emojione:smiling-face"></span>&nbsp;<span id="apositive1" class="percent text-success"></span>
+                                                </div>
+                                                <div class="mr-2">|</div>
+                                                <div class="mr-2">
+                                                    <span class="iconify" data-icon="emojione:neutral-face"></span>&nbsp;<span id="aneutral1" class="percent text-secondory"></span>
+                                                </div>
+                                                    <div class="mr-2">|</div>
+                                                <div class="mr-2">
+                                                    <span class="iconify" data-icon="emojione:frowning-face"></span>&nbsp;<span id="anegative1" class="percent text-danger"></span>
+                                                </div>
+                                               
+                                            </div>
+        
+                                      </div>
+                                      </div>
+                                      
+                                      <div class="col-md-3 col-sm-4 col-4">
+                                        <button class="btn btn-edit" onclick="editMessage1()">Edit</button>
+                                        <button class="btn btn-use" onclick="richMessage1()">Use</button>
+                                     </div>
+                                  
+                                      </div>
+                                   
+                                
+                                      </div>
+                            
+                                 
+                         
+          
+                  </div>
+              </div>
+          </div>
+       </div>
+   </div>
+ </div>
+
+     
+     <script src="https://code.iconify.design/2/2.1.2/iconify.min.js"></script>    
+     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" ></script>
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
+     <!-- <script src="https://unpkg.com/@livechat/agent-app-sdk@latest/dist/agentapp.umd.min.js"></script> -->
+     <!-- <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script> -->
+ 
+
+
+
+
+
+  <!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" ></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script> -->
+  <!-- <script src="https://code.jquery.com/jquery-3.6.0.js"></script> -->
+</body>
+
+</html>
