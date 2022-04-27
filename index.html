@@ -194,7 +194,7 @@
         console.log('SOCKET INCOMING EVENT STARTED ::::: ')
 
         console.log('new event type - ', event.type)
-        console.log('user details: ' + users)
+        //console.log('user details: ' + users)
         switch (event.type) {
         case 'message':
         // console.log('new event - ', event.type)
@@ -206,9 +206,9 @@
         // current_agent_email="jfredric@noura.ai"
         current_agent_email="rasheed@gmail.com"
 
-        customerSDK.on('user_data', user => {
-            // console.log("current user details"+user)
-          })
+        // customerSDK.on('user_data', user => {
+        //     // console.log("current user details"+user)
+        //   })
         
       
           dict.id = (qarray.length + 1);
