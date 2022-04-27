@@ -303,10 +303,11 @@ app.get("/install", async (req, res) => {
   }
 });
 
-server.listen(port, () => {
+server.listen(process.env.PORT || port, () => {
   console.log("started server");
   logmessage("started server");
   console.log(`Chat guard listening at http://localhost:${port}`);
+  console.log("heroku started in port: " + process.env.PORT);
 });
 
 // ngrok.connect(port, function (err, url) {
