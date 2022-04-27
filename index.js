@@ -7,16 +7,14 @@ const path = require("path");
 var XMLHttpRequest = require("xhr2");
 var xhr = new XMLHttpRequest();
 const server = require("http").createServer(app);
-const io = require("socket.io")(server);
+//const io = require("socket.io")(server);
 const ngrok = require("ngrok");
 const { writeFile } = require("fs");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-
-// const io = require("socket.io")(server,
-//   {
-//   allowEIO3: true // false by default
-// });
+const io = require("socket.io")(server, {
+  allowEIO3: true // false by default
+});
 
 app.use(express.json());
 const port = 3000;
