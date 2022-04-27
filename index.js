@@ -46,7 +46,8 @@ const CLIENT_SECRET = "ZPbqHvzVXsnlugb7SJHhngXBcHyCv88H";
 // acutal one  - js app
 //const CLIENT_ID='e22c3b45ca9c5c0fbbfe835dee988f5f'
 //const CLIENT_SECRET='nA0YRjVLiNHBUqTBiXyuhY9ChOWUVIfx'
-const INTEGRATION_URL = "https://moment-card-sender-85aa5.web.app";
+//const INTEGRATION_URL = "https://moment-card-sender-85aa5.web.app";
+const INTEGRATION_URL = "https://smart-chat-agent.herokuapp.com";
 
 const API_URL = "https://api.livechatinc.com";
 const ACCOUNTS_URL = "https://accounts.livechat.com";
