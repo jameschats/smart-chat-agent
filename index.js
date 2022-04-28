@@ -25,13 +25,22 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static("public"));
-app.use("/css", express.static(path.join(__dirname, "public/css")));
+//const lookup =require("mime-types").lookup;
+//app.use(express.static(__dirname+"/public"));
 
 app.get("/", function(req, res) {
   res.sendFile(path.join(__dirname, "index.html"));
 });
+
+server.listen(process.env.PORT || port, () => {
+  console.log("started server");
+  //logmessage("started server");
+  console.log(`Chat guard listening at http://localhost:${port}`);
+  console.log("heroku started in port: " + process.env.PORT);
+});
+
+//app.use(express.static("public"));
+//app.use("/css", express.static(path.join(__dirname, "public/css")));
 
 io.on("connetion", socket => {
   console.log("new connection");
@@ -304,13 +313,6 @@ app.get("/install", async (req, res) => {
     console.log("error", error);
     res.send(`Error: ${error.message}`);
   }
-});
-
-server.listen(process.env.PORT || port, () => {
-  console.log("started server");
-  //logmessage("started server");
-  console.log(`Chat guard listening at http://localhost:${port}`);
-  console.log("heroku started in port: " + process.env.PORT);
 });
 
 // ngrok.connect(port, function (err, url) {
