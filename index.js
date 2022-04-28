@@ -39,6 +39,8 @@ server.listen(process.env.PORT || port, () => {
   console.log("heroku started in port: " + process.env.PORT);
 });
 
+app.use(express.static(path.join(__dirname, "public")));
+
 //app.use(express.static("public"));
 //app.use("/css", express.static(path.join(__dirname, "public/css")));
 
